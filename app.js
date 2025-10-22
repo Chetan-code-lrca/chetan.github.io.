@@ -25,18 +25,16 @@
  * ============================================================================
  */
 
-/*
 // Your Firebase Configuration
-// Replace these placeholder values with your actual Firebase project settings
+// Live configuration - Firebase initialized and ready
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  // Optional: Add if using Realtime Database
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyAYMPxkJ6OAkiqJvb3P9HRZVwb1WJQnddQ",
+  authDomain: "ai-study-planner-a7a61.firebaseapp.com",
+  projectId: "ai-study-planner-a7a61",
+  storageBucket: "ai-study-planner-a7a61.firebasestorage.app",
+  messagingSenderId: "1040953124583",
+  appId: "1:1040953124583:web:62d0d1dc3e4d0578d82442",
+  measurementId: "G-ERXM77WNWB"
 };
 
 // Initialize Firebase
@@ -73,31 +71,11 @@ auth.onAuthStateChanged((user) => {
 //     console.log('User data:', doc.data());
 //   }
 // });
-*/
 
 // ============================================================================
 // YOUR APPLICATION CODE STARTS HERE
 // ============================================================================
 
-// Firebase Initialization
-// TODO: Replace with your Firebase project config
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
-};
-// Initialize Firebase (Modular v9+ CDN)
-if (!window.firebaseApp) {
-  window.firebaseApp = firebase.initializeApp ? firebase.initializeApp(firebaseConfig) : null;
-}
-// Auth and DB references (compat if loaded)
-const auth = firebase.auth ? firebase.auth() : null;
-const db = firebase.firestore ? firebase.firestore() : null;
-const rtdb = firebase.database ? firebase.database() : null;
 // Auth UI wiring helpers
 function setAuthUIState(user) {
   const authedEls = document.querySelectorAll('[data-auth="signed-in"]');
@@ -107,6 +85,7 @@ function setAuthUIState(user) {
   const userEmailEl = document.getElementById('user-email-display');
   if (userEmailEl) userEmailEl.textContent = user ? (user.email || user.uid) : '';
 }
+
 // Save minimal user profile after sign up / first sign in
 async function saveUserProfile(user) {
   if (!user || !db) return;
@@ -127,6 +106,7 @@ async function saveUserProfile(user) {
     }, { merge: true });
   }
 }
+
 // Email/password sign up
 async function handleEmailSignUp(e) {
   e.preventDefault();
@@ -143,6 +123,7 @@ async function handleEmailSignUp(e) {
     showNotification(err.message || 'Sign up failed', 'error');
   }
 }
+
 // Email/password login
 async function handleEmailLogin(e) {
   e.preventDefault();
@@ -156,6 +137,7 @@ async function handleEmailLogin(e) {
     showNotification(err.message || 'Login failed', 'error');
   }
 }
+
 // Logout
 async function handleLogout() {
   if (!auth) return;
@@ -166,6 +148,7 @@ async function handleLogout() {
     showNotification(err.message || 'Logout failed', 'error');
   }
 }
+
 // Load/save planner data per user (optional basic example)
 async function loadUserData(user) {
   if (!user || !db) return;
@@ -183,11 +166,13 @@ async function loadUserData(user) {
     }
   }
 }
+
 async function persistUserData(user) {
   if (!user || !db) return;
   const ref = db.collection('users').doc(user.uid).collection('app').doc('planner');
   await ref.set({ userData, updatedAt: new Date().toISOString() }, { merge: true });
 }
+
 // Hook persistence to key actions
 const persistHooks = ['handleStudyPlanSubmit','handleAddSession','deleteSubject','deleteSession','clearAllData'];
 const originalFns = {};
@@ -204,6 +189,7 @@ persistHooks.forEach(fnName => {
     }
   }
 });
+
 // Auth state listener
 if (auth) {
   auth.onAuthStateChanged(async (user) => {
@@ -214,4 +200,5 @@ if (auth) {
     }
   });
 }
+
 // Existing code below...
