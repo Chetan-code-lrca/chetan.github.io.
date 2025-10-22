@@ -1,29 +1,27 @@
 /*
  * ============================================================================
- * FIREBASE INITIALIZATION TEMPLATE
+ * FIREBASE v9+ ES MODULE IMPORTS (Browser-only)
  * ============================================================================
  * 
- * INSTRUCTIONS FOR USER CONFIGURATION:
- * 1. Include Firebase SDK via CDN in your HTML file (before this script):
- *    
- *    <!-- Firebase App (core Firebase SDK) -->
- *    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
- *    
- *    <!-- Firebase Authentication -->
- *    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
- *    
- *    <!-- Firebase Firestore -->
- *    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
+ * This code uses Firebase v9+ modular SDK with direct CDN ES module imports.
+ * For browser-only use with <script type="module"> in your HTML.
  * 
- * 2. Get your Firebase configuration from:
- *    Firebase Console > Project Settings > General > Your apps > Web app config
+ * INSTRUCTIONS:
+ * 1. Include this in your HTML file with type="module":
+ *    <script type="module" src="app.js"></script>
  * 
- * 3. Replace the placeholder values below with your actual Firebase config
+ * 2. The Firebase SDK will be imported directly from CDN (no separate script tags needed)
  * 
- * 4. Uncomment the initialization code when ready to use Firebase
+ * 3. This replaces the old compat/namespace Firebase syntax
  * 
  * ============================================================================
  */
+
+// Import Firebase v9+ modular SDK from CDN
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
 // Your Firebase Configuration
 // Live configuration - Firebase initialized and ready
@@ -38,16 +36,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication
-const auth = firebase.auth();
-
-// Initialize Cloud Firestore
-const db = firebase.firestore();
+// Initialize Firebase services
+const auth = getAuth(app);
+const db = getFirestore(app);
+const analytics = getAnalytics(app);
 
 // Example: Authentication State Observer
-auth.onAuthStateChanged((user) => {
+onAuthStateChanged(auth, (user) => {
   if (user) {
     // User is signed in
     console.log('User signed in:', user.uid);
@@ -57,20 +54,21 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
-// Example: Firestore Operations
+// Example: Firestore Operations (v9+ modular syntax)
 // Write data
-// db.collection('users').doc(user.uid).set({
+// const userRef = doc(db, 'users', user.uid);
+// await setDoc(userRef, {
 //   name: 'Example User',
 //   email: user.email,
-//   createdAt: firebase.firestore.FieldValue.serverTimestamp()
+//   createdAt: serverTimestamp()
 // });
 
 // Read data
-// db.collection('users').doc(user.uid).get().then((doc) => {
-//   if (doc.exists) {
-//     console.log('User data:', doc.data());
-//   }
-// });
+// const userRef = doc(db, 'users', user.uid);
+// const docSnap = await getDoc(userRef);
+// if (docSnap.exists()) {
+//   console.log('User data:', docSnap.data());
+// }
 
 // ============================================================================
 // YOUR APPLICATION CODE STARTS HERE
@@ -89,10 +87,10 @@ function setAuthUIState(user) {
 // Save minimal user profile after sign up / first sign in
 async function saveUserProfile(user) {
   if (!user || !db) return;
-  const ref = db.collection('users').doc(user.uid);
-  const snapshot = await ref.get();
-  if (!snapshot.exists) {
-    await ref.set({
+  const ref = doc(db, 'users', user.uid);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists()) {
+    await setDoc(ref, {
       uid: user.uid,
       email: user.email || '',
       displayName: user.displayName || 'Student',
@@ -101,7 +99,7 @@ async function saveUserProfile(user) {
       pomodoroSettings: userData.pomodoroSettings
     });
   } else {
-    await ref.set({
+    await setDoc(ref, {
       lastLoginAt: new Date().toISOString()
     }, { merge: true });
   }
@@ -115,8 +113,8 @@ async function handleEmailSignUp(e) {
   const password = document.getElementById('signup-password').value;
   const name = document.getElementById('signup-name')?.value.trim() || 'Student';
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    await cred.user.updateProfile({ displayName: name });
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName: name });
     await saveUserProfile(cred.user);
     showNotification('Account created successfully', 'success');
   } catch (err) {
@@ -131,7 +129,7 @@ async function handleEmailLogin(e) {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   try {
-    await auth.signInWithEmailAndPassword(email, password);
+    await signInWithEmailAndPassword(auth, email, password);
     showNotification('Logged in', 'success');
   } catch (err) {
     showNotification(err.message || 'Login failed', 'error');
@@ -142,7 +140,7 @@ async function handleEmailLogin(e) {
 async function handleLogout() {
   if (!auth) return;
   try {
-    await auth.signOut();
+    await signOut(auth);
     showNotification('Logged out', 'success');
   } catch (err) {
     showNotification(err.message || 'Logout failed', 'error');
@@ -152,9 +150,9 @@ async function handleLogout() {
 // Load/save planner data per user (optional basic example)
 async function loadUserData(user) {
   if (!user || !db) return;
-  const ref = db.collection('users').doc(user.uid).collection('app').doc('planner');
-  const snap = await ref.get();
-  if (snap.exists) {
+  const ref = doc(db, 'users', user.uid, 'app', 'planner');
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
     const data = snap.data();
     if (data && data.userData) {
       userData = { ...userData, ...data.userData };
@@ -169,8 +167,8 @@ async function loadUserData(user) {
 
 async function persistUserData(user) {
   if (!user || !db) return;
-  const ref = db.collection('users').doc(user.uid).collection('app').doc('planner');
-  await ref.set({ userData, updatedAt: new Date().toISOString() }, { merge: true });
+  const ref = doc(db, 'users', user.uid, 'app', 'planner');
+  await setDoc(ref, { userData, updatedAt: new Date().toISOString() }, { merge: true });
 }
 
 // Hook persistence to key actions
@@ -192,7 +190,7 @@ persistHooks.forEach(fnName => {
 
 // Auth state listener
 if (auth) {
-  auth.onAuthStateChanged(async (user) => {
+  onAuthStateChanged(auth, async (user) => {
     setAuthUIState(user);
     if (user) {
       await saveUserProfile(user);
