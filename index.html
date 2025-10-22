@@ -5,23 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Study Planner</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Firebase SDKs (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
   <div class="app-container">
-    <!-- Topbar Auth Controls -->
-    <div class="topbar" style="display:flex; justify-content:flex-end; gap:12px; padding:8px 12px;">
-      <div data-auth="signed-out">
-        <button class="btn btn--outline" onclick="document.getElementById('auth-modal').style.display='flex'">Login / Sign up</button>
-      </div>
-      <div data-auth="signed-in" style="display:none; gap:12px; align-items:center;">
-        <span id="user-email-display"></span>
-        <button class="btn btn--outline" onclick="handleLogout()">Logout</button>
-      </div>
-    </div>
-
     <!-- Sidebar Navigation -->
     <nav class="sidebar">
       <div class="sidebar-header">📚 Study Planner</div>
@@ -34,7 +20,6 @@
         <button class="nav-btn" data-view="settings">⚙️ Settings</button>
       </ul>
     </nav>
-
     <!-- Main Content Area -->
     <main class="main-content">
       <!-- Dashboard View -->
@@ -74,7 +59,6 @@
           </div>
         </div>
       </div>
-
       <!-- Other existing views preserved for brevity -->
       <div class="view" id="study-plan"></div>
       <div class="view" id="pomodoro"></div>
@@ -83,127 +67,6 @@
       <div class="view" id="settings"></div>
     </main>
   </div>
-
-  <!-- Auth Modal -->
-  <div class="modal" id="auth-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-    <div class="modal-content" style="width:100%; max-width:480px; background:#fff; border-radius:12px; padding:20px;">
-      <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between;">
-        <h3>Account</h3>
-        <button class="modal-close" onclick="closeAuthModal()">×</button>
-      </div>
-      <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
-        <button id="tab-login" class="btn btn--outline" onclick="switchAuthTab('login')">Login</button>
-        <button id="tab-signup" class="btn btn--outline" onclick="switchAuthTab('signup')">Sign up</button>
-      </div>
-      <div id="auth-error" class="error" style="color:#b00020; min-height:20px;"></div>
-
-      <!-- Login form -->
-      <form id="login-form" onsubmit="handleLogin(event)" class="card">
-        <div class="form-group">
-          <label class="form-label" for="login-email">Email</label>
-          <input class="form-control" id="login-email" type="email" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="login-password">Password</label>
-          <input class="form-control" id="login-password" type="password" minlength="6" required />
-        </div>
-        <button class="btn btn--primary btn--full-width" type="submit">Login</button>
-      </form>
-
-      <!-- Signup form -->
-      <form id="signup-form" onsubmit="handleSignup(event)" class="card" style="display:none;">
-        <div class="form-group">
-          <label class="form-label" for="signup-email">Email</label>
-          <input class="form-control" id="signup-email" type="email" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="signup-password">Password</label>
-          <input class="form-control" id="signup-password" type="password" minlength="6" required />
-        </div>
-        <button class="btn btn--primary btn--full-width" type="submit">Create account</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // Replace with your Firebase project config when available
-    const firebaseConfig = window.FIREBASE_CONFIG || null;
-    if (firebaseConfig) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    const signedOutEl = () => document.querySelector('[data-auth="signed-out"]');
-    const signedInEl = () => document.querySelector('[data-auth="signed-in"]');
-    const emailDisplay = () => document.getElementById('user-email-display');
-
-    function closeAuthModal() {
-      document.getElementById('auth-modal').style.display = 'none';
-      document.getElementById('auth-error').textContent = '';
-    }
-    function switchAuthTab(tab) {
-      const loginForm = document.getElementById('login-form');
-      const signupForm = document.getElementById('signup-form');
-      loginForm.style.display = tab === 'login' ? 'block' : 'none';
-      signupForm.style.display = tab === 'signup' ? 'block' : 'none';
-      document.getElementById('tab-login').classList.toggle('btn--primary', tab==='login');
-      document.getElementById('tab-signup').classList.toggle('btn--primary', tab==='signup');
-    }
-
-    async function handleSignup(e) {
-      e.preventDefault();
-      const email = document.getElementById('signup-email').value.trim();
-      const password = document.getElementById('signup-password').value;
-      try {
-        if (!firebase.apps.length) throw new Error('Firebase not configured');
-        const { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
-        closeAuthModal();
-      } catch (err) {
-        document.getElementById('auth-error').textContent = err.message;
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
-      try {
-        if (!firebase.apps.length) throw new Error('Firebase not configured');
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        closeAuthModal();
-      } catch (err) {
-        document.getElementById('auth-error').textContent = err.message;
-      }
-    }
-
-    async function handleLogout() {
-      try {
-        if (!firebase.apps.length) throw new Error('Firebase not configured');
-        await firebase.auth().signOut();
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    // Auth state listener toggles UI
-    function applyAuthState(user) {
-      if (user) {
-        if (signedOutEl()) signedOutEl().style.display = 'none';
-        if (signedInEl()) signedInEl().style.display = 'flex';
-        if (emailDisplay()) emailDisplay().textContent = user.email || '';
-      } else {
-        if (signedOutEl()) signedOutEl().style.display = 'block';
-        if (signedInEl()) signedInEl().style.display = 'none';
-        if (emailDisplay()) emailDisplay().textContent = '';
-      }
-    }
-
-    if (window.firebase) {
-      try {
-        firebase.auth().onAuthStateChanged(applyAuthState);
-      } catch (_) {}
-    }
-  </script>
-
   <!-- Existing app code -->
   <script src="app.js"></script>
 </body>
