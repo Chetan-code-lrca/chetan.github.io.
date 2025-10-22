@@ -24,9 +24,10 @@ import { getFirestore, collection, doc, getDoc, setDoc, serverTimestamp } from '
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
 // Your Firebase Configuration
-// Live configuration - Firebase initialized and ready
+// IMPORTANT: API key has been revoked for security. Please configure with a new valid API key.
+// See: https://console.firebase.google.com/project/ai-study-planner-a7a61/settings/general
 const firebaseConfig = {
-  apiKey: "AIzaSyAYMPxkJ6OAkiqJvb3P9HRZVwb1WJQnddQ",
+  apiKey: "YOUR_API_KEY_HERE",  // REMOVED: Previous key was revoked due to public exposure
   authDomain: "ai-study-planner-a7a61.firebaseapp.com",
   projectId: "ai-study-planner-a7a61",
   storageBucket: "ai-study-planner-a7a61.firebasestorage.app",
@@ -55,6 +56,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // Example: Firestore Operations (v9+ modular syntax)
+
 // Write data
 // const userRef = doc(db, 'users', user.uid);
 // await setDoc(userRef, {
