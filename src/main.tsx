@@ -1,6 +1,11 @@
-import '../app.js';
-import '../style.css';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-// This is a minimal entry point for the Vite build
-// The actual app logic is in app.js which uses Firebase
-console.log('StudyFlow - AI Study Planner loaded');
+// Render the React app to the DOM
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
